@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Be My Valentine 💘</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,600&family=Nunito:wght@300;400;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --pink:   #ff4d6d;
+      --rose:   #ff8fa3;
+      --blush:  #ffb3c1;
+      --lavender: #c77dff;
+      --light:  #fff0f3;
+    }
+
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      font-family: 'Nunito', sans-serif;
+    }
+
+    /* ── SCENE ── */
+    #scene {
+      position: fixed; inset: 0;
+      background: radial-gradient(ellipse at 20% 30%, #ffe4ec 0%, #fbc2eb 40%, #c77dff44 80%, #a18cd133 100%);
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    #scene::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: url("bg.jpeg");
+      background-size: cover;
+      filter: blur(6px) saturate(1.05);
+      opacity: 0.85;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── FLOATING PHOTO FRAMES ── */
+    .photo-ring {
+      position: absolute; inset: 0;
+      pointer-events: none;
+    }
+
+    .photo-frame {
+      position: absolute;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 4px solid rgba(255,255,255,0.85);
+      box-shadow:
+        0 8px 32px rgba(255,77,109,0.35),
+        0 0 0 2px rgba(255,143,163,0.4);
+      animation: floatFrame linear infinite;
+      will-change: transform;
+      pointer-events: none;
+      background: #ffeef2;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 42px;
+    }
+
+    .photo-frame img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .photo-frame .placeholder {
+      font-size: 32px;
+      opacity: 0.6;
+      animation: pulseEmoji 2.5s ease-in-out infinite;
+    }
+
+    @keyframes pulseEmoji {
+      0%,100% { transform: scale(1); }
+      50% { transform: scale(1.15); }
+    }
+
+    @keyframes floatFrame {
+      0%   { transform: translateY(0px) rotate(0deg) scale(1); }
+      25%  { transform: translateY(-22px) rotate(3deg) scale(1.03); }
+      50%  { transform: translateY(-8px) rotate(-2deg) scale(0.97); }
+      75%  { transform: translateY(-30px) rotate(4deg) scale(1.05); }
+      100% { transform: translateY(0px) rotate(0deg) scale(1); }
+    }
+
+    /* ── CANVAS HEARTS ── */
+    #heartCanvas {
+      position: fixed; inset: 0;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* ── SPARKLE PARTICLES ── */
+    .sparkle {
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+      animation: sparkleFade linear forwards;
+      z-index: 2;
+    }
+
+    @keyframes sparkleFade {
+      0%   { transform: scale(0) rotate(0deg);  opacity: 1; }
+      50%  { transform: scale(1.5) rotate(180deg); opacity: 0.8; }
+      100% { transform: scale(0) rotate(360deg); opacity: 0; }
+    }
+
+    /* ── MAIN CARD ── */
+    .card {
+      position: relative;
+      z-index: 10;
+      width: min(94%, 430px);
+      padding: 44px 34px 48px;
+      background: rgba(255,255,255,0.72);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-radius: 32px;
+      text-align: center;
+      box-shadow:
+        0 40px 100px rgba(255,77,109,0.28),
+        0 10px 30px rgba(0,0,0,0.12),
+        inset 0 0 0 1.5px rgba(255,255,255,0.55);
+      animation: cardIn 1.2s cubic-bezier(0.22,1,0.36,1) both;
+    }
+
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(60px) scale(0.88); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .card::before {
+      content: "";
+      position: absolute; inset: -3px;
+      border-radius: 34px;
+      background: conic-gradient(from 0deg, #ff4d6d, #fbc2eb, #c77dff, #ff9a9e, #ff4d6d);
+      z-index: -1;
+      animation: spinGlow 8s linear infinite;
+      filter: blur(18px);
+      opacity: 0.6;
+    }
+
+    @keyframes spinGlow {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ── EMOJI / AVATAR ── */
+    .avatar-wrap {
+      position: relative;
+      display: inline-block;
+      margin-bottom: 16px;
+    }
+
+    .avatar-emoji {
+      font-size: 72px;
+      display: block;
+      animation: heartbeat 2s ease-in-out infinite;
+      filter: drop-shadow(0 0 18px rgba(255,77,109,0.6));
+    }
+
+    @keyframes heartbeat {
+      0%,100% { transform: scale(1) rotate(-3deg); }
+      15%      { transform: scale(1.12) rotate(3deg); }
+      30%      { transform: scale(1) rotate(-2deg); }
+      45%      { transform: scale(1.08) rotate(2deg); }
+      60%      { transform: scale(1) rotate(0deg); }
+    }
+
+    .orbit {
+      position: absolute;
+      inset: -20px;
+      animation: orbitSpin 4s linear infinite;
+      pointer-events: none;
+    }
+
+    .orbit span {
+      position: absolute;
+      font-size: 18px;
+    }
+
+    .orbit span:nth-child(1) { top: 0; left: 50%; transform: translateX(-50%); }
+    .orbit span:nth-child(2) { right: 0; top: 50%; transform: translateY(-50%); }
+    .orbit span:nth-child(3) { bottom: 0; left: 50%; transform: translateX(-50%); }
+    .orbit span:nth-child(4) { left: 0; top: 50%; transform: translateY(-50%); }
+
+    @keyframes orbitSpin {
+      to { transform: rotate(360deg); }
+    }
+
+    h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px;
+      color: #3d0c20;
+      line-height: 1.4;
+      margin-bottom: 10px;
+      animation: titleGlow 3s ease-in-out infinite alternate;
+    }
+
+    @keyframes titleGlow {
+      from { text-shadow: 0 0 10px rgba(255,77,109,0.3); }
+      to   { text-shadow: 0 0 30px rgba(255,77,109,0.7), 0 0 60px rgba(199,125,255,0.3); }
+    }
+
+    .subtitle {
+      font-size: 13.5px;
+      color: #b05070;
+      margin-bottom: 32px;
+      font-style: italic;
+      opacity: 0.85;
+    }
+
+    /* ── BUTTONS ── */
+    .btn-row {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      position: relative;
+      height: 60px;
+      align-items: center;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 50px;
+      font-size: 16px;
+      font-weight: 600;
+      font-family: 'Nunito', sans-serif;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0.25);
+      border-radius: inherit;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .btn:hover::after { opacity: 1; }
+
+    #yes {
+      padding: 15px 38px;
+      background: linear-gradient(135deg, #ff4d6d 0%, #ff758f 50%, #ff9a9e 100%);
+      color: #fff;
+      box-shadow: 0 12px 32px rgba(255,77,109,0.55), 0 4px 10px rgba(0,0,0,0.1);
+      animation: yesPulse 2.5s ease-in-out infinite;
+    }
+
+    @keyframes yesPulse {
+      0%,100% { box-shadow: 0 12px 32px rgba(255,77,109,0.55); }
+      50%      { box-shadow: 0 18px 45px rgba(255,77,109,0.8), 0 0 30px rgba(255,77,109,0.4); }
+    }
+
+    #yes:hover { transform: translateY(-4px) scale(1.06); }
+    #yes:active { transform: scale(0.94); }
+
+    #no {
+      padding: 14px 30px;
+      background: rgba(255,255,255,0.9);
+      color: #999;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+      position: absolute;
+      white-space: nowrap;
+      transition: left 0.05s, top 0.05s, transform 0.2s;
+    }
+
+    .hint {
+      margin-top: 22px;
+      font-size: 12.5px;
+      color: #b07080;
+      font-style: italic;
+    }
+
+    /* ── SUCCESS STATE ── */
+    .card.yes-state h2 {
+      animation: none;
+      color: #c0155a;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 480px) {
+      h2 { font-size: 23px; }
+      .avatar-emoji { font-size: 58px; }
+    }
+
+    /* ── FLOATING RIBBON ── */
+    .ribbon {
+      position: absolute;
+      top: -14px; right: 22px;
+      background: linear-gradient(135deg, #ff4d6d, #c77dff);
+      color: white;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      padding: 5px 14px;
+      border-radius: 0 0 10px 10px;
+      text-transform: uppercase;
+      box-shadow: 0 4px 14px rgba(255,77,109,0.45);
+    }
+
+    /* ── ADDED: MEMORY IMAGES after YES ── */
+    .memory-images-container {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9;
+    }
+
+    .memory-img-wrap {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+      animation: memoryFloat 5s ease-in-out infinite;
+      transition: opacity 0.8s ease;
+    }
+
+    .memory-img-wrap.visible {
+      opacity: 1;
+    }
+
+    .memory-img-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      border-radius: 18px;
+      border: 4px solid rgba(255, 255, 255, 0.92);
+      box-shadow:
+        0 12px 40px rgba(255, 77, 109, 0.45),
+        0 0 0 2px rgba(255, 143, 163, 0.5);
+    }
+
+    @keyframes memoryFloat {
+      0%   { transform: translateY(0px) rotate(-2deg) scale(1); }
+      25%  { transform: translateY(-14px) rotate(2deg) scale(1.02); }
+      50%  { transform: translateY(-6px) rotate(-1deg) scale(0.98); }
+      75%  { transform: translateY(-18px) rotate(3deg) scale(1.03); }
+      100% { transform: translateY(0px) rotate(-2deg) scale(1); }
+    }
+  </style>
+</head>
+
+<body>
+
+<canvas id="heartCanvas"></canvas>
+
+<div id="scene">
+
+  <!-- FLOATING PHOTO RING — 12 frames -->
+  <div class="photo-ring" id="photoRing"></div>
+
+  <!-- CARD -->
+  <div class="card" id="card">
+    <div class="ribbon">Feb 14 ✨</div>
+
+    <div class="avatar-wrap">
+      <span class="avatar-emoji">🐱❤️</span>
+      <div class="orbit">
+        <span>💗</span><span>🌸</span><span>💕</span><span>✨</span>
+      </div>
+    </div>
+
+    <h2 id="cardTitle">Vaishuuuuuuuuu,<br>will you be my Valentine?</h2>
+    <p class="subtitle" id="cardSub">Every heartbeat has your name on it 🌹</p>
+
+    <div class="btn-row" id="btnRow">
+      <button class="btn" id="yes">Yes, always 💖</button>
+      <button class="btn" id="no">No 🙈</button>
+    </div>
+
+    <p class="hint" id="cardHint">Some love stories don't allow "no" ✨</p>
+  </div>
+</div>
+
+<!-- ADDED: Container for the 10 memory images that appear after YES -->
+<div class="memory-images-container" id="memoryImagesContainer"></div>
+
+<audio id="hoverSound" src="https://assets.mixkit.co/sfx/preview/mixkit-cartoon-voice-laugh-343.mp3" preload="auto"></audio>
+<audio id="yesSound"   src="https://assets.mixkit.co/sfx/preview/mixkit-achievement-bell-600.mp3" preload="auto"></audio>
+
+<!-- Original background music tag (unchanged) -->
+<audio id="valSong" src="song.mp3" preload="auto"></audio>
+
+<!-- ADDED: Looping love song audio element -->
+<audio id="loveSong" src="song.mp3" loop preload="auto"></audio>
+
+<script>
+// ═══════════════════════════════════════════════
+//  PHOTO FRAMES — 12 floating frames around card
+// ═══════════════════════════════════════════════
+const frames = [
+  { emoji: "📸", size: 95,  x: "4%",  y: "8%",  dur: 6.2, delay: 0   },
+  { emoji: "🌸", size: 75,  x: "20%", y: "72%", dur: 5.8, delay: 0.6 },
+  { emoji: "💑", size: 85,  x: "2%",  y: "42%", dur: 7.1, delay: 1.2 },
+  { emoji: "🎀", size: 70,  x: "14%", y: "26%", dur: 6.6, delay: 0.4 },
+  { emoji: "💐", size: 90,  x: "6%",  y: "84%", dur: 5.5, delay: 1.8 },
+  { emoji: "🌹", size: 80,  x: "22%", y: "53%", dur: 6.9, delay: 0.9 },
+  { emoji: "📷", size: 88,  x: "74%", y: "9%",  dur: 6.3, delay: 0.3 },
+  { emoji: "🥂", size: 72,  x: "82%", y: "70%", dur: 5.9, delay: 1.5 },
+  { emoji: "💌", size: 86,  x: "76%", y: "43%", dur: 7.2, delay: 0.7 },
+  { emoji: "🎁", size: 78,  x: "65%", y: "25%", dur: 6.0, delay: 2.1 },
+  { emoji: "✨", size: 68,  x: "68%", y: "80%", dur: 5.6, delay: 1.0 },
+  { emoji: "🫶", size: 92,  x: "88%", y: "22%", dur: 6.7, delay: 1.4 },
+];
+
+const photoRing = document.getElementById("photoRing");
+
+frames.forEach((f, i) => {
+  const el = document.createElement("div");
+  el.className = "photo-frame";
+  el.style.cssText = `
+    width:${f.size}px;
+    height:${f.size}px;
+    left:${f.x};
+    top:${f.y};
+    animation-duration:${f.dur}s;
+    animation-delay:-${f.delay}s;
+  `;
+
+  /* ── SWAP: if you have image paths, uncomment below ──
+  const img = document.createElement("img");
+  img.src = f.src;
+  img.alt = "memory";
+  img.onerror = () => { img.style.display='none'; el.innerHTML = `<span class="placeholder">${f.emoji}</span>`; };
+  el.appendChild(img);
+  */
+
+  el.innerHTML = `<span class="placeholder">${f.emoji}</span>`;
+  photoRing.appendChild(el);
+});
+
+// ═══════════════════════════════════════════════
+//  CANVAS HEARTS — animated rising hearts
+// ═══════════════════════════════════════════════
+const canvas = document.getElementById("heartCanvas");
+const ctx    = canvas.getContext("2d");
+
+function resize() {
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener("resize", resize);
+
+const HEARTS = [];
+const HEART_CHARS = ["❤️","💗","💕","💓","🩷","💞","💖"];
+
+class Heart {
+  constructor() { this.reset(); }
+  reset() {
+    this.x    = Math.random() * canvas.width;
+    this.y    = canvas.height + 30;
+    this.size = Math.random() * 28 + 12;
+    this.vx   = (Math.random() - 0.5) * 1.2;
+    this.vy   = -(Math.random() * 1.8 + 0.8);
+    this.alpha = Math.random() * 0.5 + 0.45;
+    this.char  = HEART_CHARS[Math.floor(Math.random() * HEART_CHARS.length)];
+    this.wobble = Math.random() * Math.PI * 2;
+    this.wobbleSpeed = Math.random() * 0.04 + 0.02;
+    this.life = 0;
+    this.maxLife = Math.random() * 180 + 120;
+  }
+  update() {
+    this.wobble += this.wobbleSpeed;
+    this.x += this.vx + Math.sin(this.wobble) * 0.7;
+    this.y += this.vy;
+    this.life++;
+    const fade = this.life / this.maxLife;
+    this.alpha = (1 - fade) * 0.75;
+    if (this.life >= this.maxLife || this.y < -40) this.reset();
+  }
+  draw() {
+    ctx.globalAlpha = this.alpha;
+    ctx.font = `${this.size}px serif`;
+    ctx.fillText(this.char, this.x, this.y);
+  }
+}
+
+for (let i = 0; i < 40; i++) {
+  const h = new Heart();
+  h.y = Math.random() * canvas.height;
+  h.life = Math.floor(Math.random() * h.maxLife);
+  HEARTS.push(h);
+}
+
+function animateCanvas() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  HEARTS.forEach(h => { h.update(); h.draw(); });
+  ctx.globalAlpha = 1;
+  requestAnimationFrame(animateCanvas);
+}
+animateCanvas();
+
+// ═══════════════════════════════════════════════
+//  SPARKLE on mouse move
+// ═══════════════════════════════════════════════
+document.addEventListener("mousemove", e => {
+  if (Math.random() > 0.35) return;
+  const s = document.createElement("div");
+  s.className = "sparkle";
+  const colors = ["#ff4d6d","#fbc2eb","#c77dff","#ffb3c1","#ff758f"];
+  const size = Math.random() * 12 + 5;
+  s.style.cssText = `
+    left:${e.clientX}px; top:${e.clientY}px;
+    width:${size}px; height:${size}px;
+    background:${colors[Math.floor(Math.random()*colors.length)]};
+    animation-duration:${Math.random()*0.6+0.4}s;
+    margin:-${size/2}px;
+  `;
+  document.body.appendChild(s);
+  setTimeout(() => s.remove(), 1100);
+});
+
+// ═══════════════════════════════════════════════
+//  BUTTONS
+// ═══════════════════════════════════════════════
+const noBtn     = document.getElementById("no");
+const yesBtn    = document.getElementById("yes");
+const card      = document.getElementById("card");
+const hoverSnd  = document.getElementById("hoverSound");
+const yesSnd    = document.getElementById("yesSound");
+const title     = document.getElementById("cardTitle");
+const sub       = document.getElementById("cardSub");
+const hint      = document.getElementById("cardHint");
+const btnRow    = document.getElementById("btnRow");
+
+let noClicks = 0;
+const noMessages = ["Still no? 🥺","Pleeease? 🙏","Come on! 💞","I'll be sad 😢","Last chance! 💘"];
+
+// Escape "No" on hover
+noBtn.addEventListener("mouseenter", () => {
+  try { hoverSnd.currentTime = 0; hoverSnd.play(); } catch(e){}
+
+  const cRect = card.getBoundingClientRect();
+  const bRect = noBtn.getBoundingClientRect();
+  const maxX = cRect.width  - bRect.width  - 12;
+  const maxY = cRect.height - bRect.height - 12;
+
+  noBtn.style.position = "absolute";
+  noBtn.style.left = Math.random() * maxX + "px";
+  noBtn.style.top  = Math.random() * maxY + "px";
+
+  noClicks++;
+  if (noClicks <= noMessages.length) {
+    noBtn.textContent = noMessages[noClicks - 1] + " No";
+  }
+});
+
+// "Yes" handler
+yesBtn.addEventListener("click", () => {
+  try { yesSnd.play(); } catch(e){}
+
+  // Play added background/song (user-click allows autoplay)
+  try {
+    const music = document.getElementById("valSong");
+    if (music) { music.currentTime = 0; music.play().catch(()=>{}); }
+  } catch(e){}
+
+  // ADDED: Start looping love song
+  try {
+    const loveSong = document.getElementById("loveSong");
+    if (loveSong) {
+      loveSong.currentTime = 0;
+      loveSong.play().catch(() => {});
+    }
+  } catch(e){}
+
+  // Big confetti burst
+  const fire = (origin, angle) => confetti({
+    particleCount: 120,
+    spread: 100,
+    angle,
+    origin,
+    colors: ["#ff4d6d","#fbc2eb","#c77dff","#ffb3c1","#ff9a9e","#fff"],
+    shapes: ["circle","square"],
+    ticks: 220
+  });
+
+  fire({ x: 0.5, y: 0.6 }, 90);
+  setTimeout(() => fire({ x: 0.2, y: 0.7 }, 60),  300);
+  setTimeout(() => fire({ x: 0.8, y: 0.7 }, 120), 600);
+
+  confetti({ particleCount: 60, spread: 360, startVelocity: 20, origin: { y: 0.5 }, gravity: 0.3, scalar: 1.4, shapes:["heart"], ticks: 300 });
+
+  // Update card text
+  card.classList.add("yes-state");
+  title.innerHTML = "YAY! 🎉<br>You made me the happiest!";
+  sub.textContent = "Can't wait for Valentine's Day with you 💕";
+  hint.textContent = "You're my favourite person in the world 🌹";
+  btnRow.innerHTML = `<button class="btn" id="yes" style="animation:none;cursor:default;">
+    Forever yours 💖
+  </button>`;
+
+  // ADDED: Show 10 memory images one by one, scattered around the screen
+  const memoryImages = [
+    { src: "img1.jpeg"  },
+    { src: "img2.jpeg"  },
+    { src: "img3.jpeg"  },
+    { src: "img4.jpeg"  },
+    { src: "img5.jpeg"  },
+    { src: "img6.jpg"  },
+    { src: "img7.jpg"  },
+    { src: "img8.jpeg"  },
+    { src: "img9.jpeg"  },
+    { src: "img10.jpeg" },
+    { src: "img10.jpeg" },
+    { src: "img10.jpeg" },
+  ];
+
+  // 10 scattered positions — avoid center card zone (roughly 30%–70% x, 25%–75% y)
+  const scatteredPositions = [
+    { left: "1%",   top: "3%",    animationDelay: "0s",    animationDuration: "6.2s"  },  // top-left corner
+    { right: "1%",  top: "3%",    animationDelay: "0.5s",  animationDuration: "5.8s"  },  // top-right corner
+    { left: "1%",   bottom: "3%", animationDelay: "1.0s",  animationDuration: "6.6s"  },  // bottom-left corner
+    { right: "1%",  bottom: "3%", animationDelay: "1.5s",  animationDuration: "5.5s"  },  // bottom-right corner
+    { left: "1%",   top: "38%",   animationDelay: "2.0s",  animationDuration: "7.0s"  },  // mid-left
+    { right: "1%",  top: "38%",   animationDelay: "2.5s",  animationDuration: "6.4s"  },  // mid-right
+    { left: "32%",  top: "2%",    animationDelay: "3.0s",  animationDuration: "5.9s"  },  // top-center-left
+    { right: "32%", top: "2%",    animationDelay: "3.5s",  animationDuration: "6.8s"  },  // top-center-right
+    { left: "32%",  bottom: "2%", animationDelay: "4.0s",  animationDuration: "6.1s"  },  // bottom-center-left
+    { right: "32%", bottom: "2%", animationDelay: "4.5s",  animationDuration: "5.7s"  },  // bottom-center-right
+  ];
+
+  const container = document.getElementById("memoryImagesContainer");
+
+  memoryImages.forEach((imgData, index) => {
+    setTimeout(() => {
+      const wrap = document.createElement("div");
+      wrap.className = "memory-img-wrap";
+
+      const pos = scatteredPositions[index];
+      let styleStr = `
+        width: 280px;
+        height: 280px;
+        animation-delay: ${pos.animationDelay};
+        animation-duration: ${pos.animationDuration};
+      `;
+      if (pos.left)   styleStr += `left: ${pos.left};`;
+      if (pos.right)  styleStr += `right: ${pos.right};`;
+      if (pos.top)    styleStr += `top: ${pos.top};`;
+      if (pos.bottom) styleStr += `bottom: ${pos.bottom};`;
+
+      wrap.style.cssText = styleStr;
+
+      const img = document.createElement("img");
+      img.src = imgData.src;
+      img.alt = "memory";
+      wrap.appendChild(img);
+      container.appendChild(wrap);
+
+      // Trigger fade-in on next frame
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          wrap.classList.add("visible");
+        });
+      });
+    }, index * 1000);
+  });
+});
+</script>
+</body>
+</html>
